@@ -30,7 +30,7 @@ export const metadata: Metadata = {
         url: "/cover.jpeg", // Path to your image in the public directory
         width: 100,
         height: 100,
-        alt: "Yearly Hour Counter",
+        alt: "Yearly Hour Counter.",
       },
     ],
   },
