@@ -77,9 +77,9 @@ export default function AnimeQuotes() {
           {quote ? (
             <div className="text-center">
               <Quote className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-              <p className="text-purple-200 italic text-lg leading-relaxed">
-                "{quote.english}"
-              </p>
+                <p className="text-purple-200 italic text-lg leading-relaxed">
+                &quot;{quote.english}&quot;
+                </p>
             </div>
           ) : (
             <p className="text-center text-purple-300">

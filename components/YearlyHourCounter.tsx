@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import AnimeQuotes from './AnimeQuotes'
-import { Hourglass, Zap } from 'lucide-react'
+import { Hourglass } from 'lucide-react'
 
 export default function YearlyHourCounter() {
   const [timeInfo, setTimeInfo] = useState({
