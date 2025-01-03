@@ -15,6 +15,25 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Yearly Hour Counter",
   description: "The clock is ticking...",
+  icons: {
+    icon: "/icon.svg",
+  },
+  // Add OpenGraph image metadata
+  openGraph: {
+    title: "Are you accelerating?",
+    description: "The clock is ticking...",
+    url: 'https://yr-ctr.vercel.app/',
+    siteName: 'Yearly Hour Counter',
+    type: 'website',
+    images: [
+      {
+        url: "/cover.jpeg", // Path to your image in the public directory
+        width: 100,
+        height: 100,
+        alt: "Yearly Hour Counter",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
