@@ -2,9 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #1a1a1a; /* mangaTheme.colors.background */
+  color: #e0e0e0; /* mangaTheme.colors.text */
+  font-family: 'Space Grotesk', sans-serif; /* mangaTheme.fonts.body */
 }
+
+/* Apply the font to all elements */
+* {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.scrollbar-default::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollbar-default::-webkit-scrollbar-thumb {
+  background-color: rgba(179, 24, 16, 0.257); /* Purple-500 with transparency */
+  border-radius: 3px;
+}
+.scrollbar-default::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
 
 @layer base {
   :root {
@@ -69,4 +90,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-space-grotesk {
+  font-family: 'Space Grotesk', serif;
 }

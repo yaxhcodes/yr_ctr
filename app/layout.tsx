@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,25 +13,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
+
 export const metadata: Metadata = {
-  title: "Yearly Hour Counter",
+  title: "The Timekeeper",
   description: "The clock is ticking...",
   icons: {
     icon: "/icon.svg",
   },
-  // Add OpenGraph image metadata
   openGraph: {
     title: "Are you accelerating?",
     description: "The clock is ticking...",
     url: 'https://yr-ctr.vercel.app/',
-    siteName: 'Yearly Hour Counter',
+    siteName: 'The Timekeeper',
     type: 'website',
     images: [
       {
-        url: "/cover.jpeg", // Path to your image in the public directory
+        url: "/cover.jpeg",
         width: 100,
         height: 100,
-        alt: "Yearly Hour Counter.",
+        alt: "The Timekeeper.",
       },
     ],
   },
@@ -44,8 +49,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
+        >
         {children}
       </body>
     </html>

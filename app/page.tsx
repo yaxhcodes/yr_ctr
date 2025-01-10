@@ -1,10 +1,5 @@
-import YearlyHourCounter from '../components/YearlyHourCounter'
+import TabsContainer from '@/components/TabsContainer'
 
 export default function Home() {
-  return (
-    <main>
-      <YearlyHourCounter />
-    </main>
-  )
+  return <TabsContainer />
 }
-
