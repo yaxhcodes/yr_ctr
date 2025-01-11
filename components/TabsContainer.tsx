@@ -7,10 +7,12 @@ import PomodoroClock from './zen/PomodoroClock'
 import { Clover, Hourglass } from 'lucide-react'
 import { useMediaQuery } from 'react-responsive'
 import MusicPlayer from './zen/MusicPlayer'
+import { motion, AnimatePresence } from 'framer-motion' // Import Framer Motion
 
 export default function TabsContainer() {
   const [activeTab, setActiveTab] = useState<string>('timekeeper')
   const [mounted, setMounted] = useState(false)
+  const [footerText, setFooterText] = useState('Keep winning, Keep accelerating!')
   const isMobile = useMediaQuery({ maxWidth: 768 })
 
   // Handle tab persistence
@@ -41,11 +43,20 @@ export default function TabsContainer() {
     },
     {
       id: 'focus',
-      label: 'Focus',
+      label: 'Zen',
       icon: <Clover className="w-6 h-8" />,
       content: <PomodoroClock />
     }
   ]
+
+  // Handle footer text change on hover or selection
+  const handleFooterHover = () => {
+    setFooterText('A project under Flames of Amaterasu!!')
+  }
+
+  const handleFooterLeave = () => {
+    setFooterText('Keep winning, Keep accelerating!')
+  }
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-cover bg-center bg-no-repeat p-2 pt-4 relative">
@@ -103,6 +114,26 @@ export default function TabsContainer() {
         >
           <MusicPlayer />
         </div>
+
+        {/* Footer with Animated Text */}
+        <footer
+          className="flex justify-center py-8 text-sm cursor-pointer"
+          onMouseEnter={handleFooterHover}
+          onMouseLeave={handleFooterLeave}
+          onClick={handleFooterHover}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={footerText}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {footerText}
+            </motion.div>
+          </AnimatePresence>
+        </footer>
       </div>
     </div>
   )

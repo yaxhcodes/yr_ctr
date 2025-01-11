@@ -19,7 +19,7 @@ body {
   height: 8px;
 }
 .scrollbar-default::-webkit-scrollbar-thumb {
-  background-color: rgba(179, 24, 16, 0.257); /* Purple-500 with transparency */
+  background-color: rgba(44, 42, 39, 0.900); /* Purple-500 with transparency */
   border-radius: 3px;
 }
 .scrollbar-default::-webkit-scrollbar-track {

@@ -5,13 +5,15 @@ import React, { useState, useEffect } from 'react'
 // YouTube Playlist IDs
 const playlists = {
   zimmer: 'PLzPUZygRisDaRz6HvENiVEI66rV1_E9F0',
+  nujabes: 'PL78919005D9B21949',
   space: 'PLzPUZygRisDYLY86k9sLJwQ-lMfCmreKB',
   soft: 'PLzPUZygRisDasnL-ix38DoDmm6c2vpzsL',
   simpsonwave: 'PLgqUU6LMjmasfShYkWONWHgTkrBW-Xhi4',
-  ghibli: 'PLDO3eJkPLUstU8ilq0U5deIR75-Y_M3ei',
+  ghibli: 'PLoHeY8_-p9bqCxws5RXtcVwkKxM-S-wdR',
   academia: 'PLoDIwr-VVj-y151-PmbwGFQfA7aorugTz',
   anime: 'PLl578ZPbYIlFcSxuka8Km37VgbUYUWI5p',
   genshin: 'PLQanRFTDY9rFjeAgCdtmDSiH4kXp159xN'
+  
 }
 
 export default function MusicPlayer() {
@@ -122,7 +124,7 @@ export default function MusicPlayer() {
               className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
                 musicGenre === genre
                   ? 'bg-stone-300 text-black'
-                  : 'bg-stone-800/30 text-gray-300 hover:bg-gray-700/50'
+                  : 'bg-stone-800/30 text-gray-300 hover:bg-stone-400 hover:text-black'
               }`}
               style={{ userSelect: 'none' }}
             >

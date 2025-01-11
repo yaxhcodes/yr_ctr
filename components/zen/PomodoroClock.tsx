@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Play, Pause, RefreshCw, Settings } from 'lucide-react'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from '@/hooks/use-toast'
+import { SettingsModal } from './SettingsModal'
 
 export default function PomodoroClock() {
-  // Load initial state from local storage or use defaults
   const [time, setTime] = useState(() => {
     const savedTime = localStorage.getItem('pomodoroTime')
     return savedTime ? parseInt(savedTime, 10) : 25 * 60
@@ -24,11 +26,9 @@ export default function PomodoroClock() {
   const [workDuration, setWorkDuration] = useState(25)
   const [breakDuration, setBreakDuration] = useState(5)
   const [showSettings, setShowSettings] = useState(false)
-  interface VideoData {
-    youtube_id: string;
-  }
+  const [videoData, setVideoData] = useState<{ youtube_id: string } | null>(null)
 
-  const [videoData, setVideoData] = useState<VideoData | null>(null)
+  const { toast } = useToast()
 
   // Save state to local storage whenever it changes
   useEffect(() => {
@@ -58,6 +58,13 @@ export default function PomodoroClock() {
     fetchVideoData()
   }, [])
 
+  // Update the tab title with the timer state
+  useEffect(() => {
+    const mode = isBreak ? 'Break Mode' : 'Focus Mode'
+    const formattedTime = formatTime(time)
+    document.title = `${mode} - ${formattedTime}`
+  }, [time, isBreak])
+
   // Timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -67,19 +74,44 @@ export default function PomodoroClock() {
         setTime((prevTime) => prevTime - 1)
       }, 1000)
     } else if (time === 0) {
-      // When time reaches 0, toggle between Focus Time and Break Time
       setIsBreak((prevIsBreak) => !prevIsBreak)
-      setTime(isBreak ? workDuration * 60 : breakDuration * 60) // Reset timer based on the next state
-      setIsActive(true) // Automatically start the next timer
+      setTime(isBreak ? workDuration * 60 : breakDuration * 60)
+      setIsActive(true)
 
-      // Send a notification when the timer switches
+      const today = new Date().toDateString()
+      const lastCompletedDate = localStorage.getItem('lastCompletedDate')
+
+      if (!isBreak && today !== lastCompletedDate) {
+        toast({
+          title: "Congrats! 🎉",
+          description: "You have unlocked today's video!",
+          variant: "default",
+        })
+
+        localStorage.setItem('lastCompletedDate', today)
+      }
+
+      if (!isBreak) {
+        toast({
+          title: "Congrats! 🎉",
+          description: "You completed the focus duration. Time for a break!",
+          variant: "default",
+        })
+      } else {
+        toast({
+          title: "Break's Over! ⏰",
+          description: "Time to focus again. Let's get back to work!",
+          variant: "default",
+        })
+      }
+
       if (typeof window !== 'undefined' && window.Notification && Notification.permission === 'granted') {
         new Notification(isBreak ? 'Focus Time!' : 'Break Time!')
       }
     }
 
     return () => clearInterval(interval)
-  }, [isActive, time, isBreak, workDuration, breakDuration])
+  }, [isActive, time, isBreak, workDuration, breakDuration, toast])
 
   const startTimer = () => setIsActive(true)
   const pauseTimer = () => setIsActive(false)
@@ -87,7 +119,6 @@ export default function PomodoroClock() {
     setIsActive(false)
     setIsBreak(false)
     setTime(workDuration * 60)
-    // Clear local storage on reset
     localStorage.removeItem('pomodoroTime')
     localStorage.removeItem('pomodoroIsActive')
     localStorage.removeItem('pomodoroIsBreak')
@@ -100,7 +131,7 @@ export default function PomodoroClock() {
   }
 
   const handleSettings = () => {
-    setShowSettings(!showSettings)
+    setShowSettings(true)
   }
 
   const saveSettings = () => {
@@ -108,14 +139,22 @@ export default function PomodoroClock() {
     setShowSettings(false)
   }
 
-  // Calculate progress percentage for the circular progress bar
   const totalTime = isBreak ? breakDuration * 60 : workDuration * 60
   const progressPercentage = ((totalTime - time) / totalTime) * 100
+
+  const handleVideoClick = () => {
+    if (!isBreak) {
+      toast({
+        title: "Focus First! 🚀",
+        description: "Complete your focus duration to unlock a life-changing video.",
+        variant: "default",
+      })
+    }
+  }
 
   return (
     <div className="flex flex-col">
       <Card className="w-full max-w-2xl shadow-lg bg-stone-700/60 border-none backdrop-blur-sm overflow-hidden relative">
-        {/* <div className="absolute inset-0 bg-[url('/placeholder.jpeg?height=400&width=600')] opacity-10 bg-cover bg-center"></div> */}
         <CardHeader className="text-center relative z-10">
           <CardTitle className="text-3xl font-bold text-white">
             {isBreak ? 'Break Time!' : 'Focus Time!'}
@@ -124,7 +163,6 @@ export default function PomodoroClock() {
         <CardContent className="relative z-10">
           <div className="space-y-6">
             <div className="text-center">
-              {/* Circular Progress Bar */}
               <div className="flex justify-center">
                 <div className="w-48 h-48">
                   <CircularProgressbar
@@ -133,14 +171,14 @@ export default function PomodoroClock() {
                     styles={buildStyles({
                       textSize: '16px',
                       textColor: '#ffffff',
-                      pathColor: '#d6d3d1', // Red for the progress bar
-                      trailColor: '#2d2a28', // Dark gray for the trail
+                      pathColor: '#d6d3d1',
+                      trailColor: '#2d2a28',
                     })}
                   />
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-center space-x-4">
               <Button
                 variant="ghost"
@@ -168,35 +206,6 @@ export default function PomodoroClock() {
               </Button>
             </div>
 
-            {showSettings && (
-              <div className="mt-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-gray-300">Work Duration (minutes):</label>
-                  <input
-                    type="number"
-                    value={workDuration}
-                    onChange={(e) => setWorkDuration(Number(e.target.value))}
-                    className="w-20 p-2 bg-stone-800 text-gray-300 rounded-lg"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-gray-300">Break Duration (minutes):</label>
-                  <input
-                    type="number"
-                    value={breakDuration}
-                    onChange={(e) => setBreakDuration(Number(e.target.value))}
-                    className="w-20 p-2 bg-stone-800 text-gray-300 rounded-lg"
-                  />
-                </div>
-                <Button
-                  className="w-full bg-stone-500 hover:text-stone-400 text-white"
-                  onClick={saveSettings}
-                >
-                  Save
-                </Button>
-              </div>
-            )}
-
             {isBreak && videoData && (
               <div className="mt-4 text-center">
                 <h2 className="text-xl font-bold text-white mb-2">Get to know something new!!</h2>
@@ -205,6 +214,7 @@ export default function PomodoroClock() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-stone-300 hover:text-stone-400"
+                  onClick={handleVideoClick}
                 >
                   Watch this video
                 </a>
@@ -213,6 +223,20 @@ export default function PomodoroClock() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Render the SettingsModal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        workDuration={workDuration}
+        setWorkDuration={setWorkDuration}
+        breakDuration={breakDuration}
+        setBreakDuration={setBreakDuration}
+        onSave={saveSettings}
+      />
+
+      {/* Add the Toaster component to display toast messages */}
+      <Toaster />
     </div>
   )
 }
