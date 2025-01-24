@@ -36,9 +36,9 @@ export default function MusicPlayer() {
     if (typeof window !== 'undefined') {
       const savedGenre = localStorage.getItem('musicGenre')
       const isValid = savedGenre && allPlaylists.hasOwnProperty(savedGenre)
-      return isValid ? savedGenre : 'zimmer'
+      return isValid ? savedGenre : 'Zimmer'
     }
-    return 'zimmer'
+    return 'Zimmer'
   })
 
   const [currentVideoIndex, setCurrentVideoIndex] = useState(() => {
