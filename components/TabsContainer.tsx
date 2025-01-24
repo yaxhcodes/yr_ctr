@@ -66,6 +66,8 @@ export default function TabsContainer() {
         loop
         muted
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        onContextMenu={(e) => e.preventDefault()}
+        controlsList="nodownload  noremoteplayback"
       >
         <source src="/vagabond.mp4" type="video/mp4" />
         Your browser does not support the video tag.
