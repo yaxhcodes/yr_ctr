@@ -34,9 +34,17 @@ export default function MusicPlayer() {
   })
 
   const allPlaylists: Record<string, string> = useMemo(() => ({
-    ...predefinedPlaylists,
-    ...customPlaylists
+    ...customPlaylists,
+    ...predefinedPlaylists
   }), [customPlaylists])
+
+  const playlistOrder = useMemo(() => {
+    const customNames = Object.keys(customPlaylists)
+    const predefinedNames = Object.keys(predefinedPlaylists).filter(
+      name => !customPlaylists.hasOwnProperty(name)
+    )
+    return [...customNames, ...predefinedNames]
+  }, [customPlaylists])
 
   const [musicGenre, setMusicGenre] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -104,6 +112,20 @@ export default function MusicPlayer() {
     setDialogOpen(false)
   }
 
+  const handleDeletePlaylist = (e: React.MouseEvent, playlistName: string) => {
+    e.stopPropagation()
+    const updated = { ...customPlaylists }
+    delete updated[playlistName]
+    setCustomPlaylists(updated)
+    localStorage.setItem('customPlaylists', JSON.stringify(updated))
+
+    if (musicGenre === playlistName) {
+      setMusicGenre('Zimmer')
+      setCurrentVideoIndex(0)
+      setPlaybackTime(0)
+    }
+  }
+
   const getYouTubeParams = () => {
     return `list=${allPlaylists[musicGenre]}&index=${currentVideoIndex}&start=${Math.floor(playbackTime)}&autoplay=1&enablejsapi=1`
   }
@@ -116,7 +138,7 @@ export default function MusicPlayer() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button
-              className="absolute left-0 top-0 z-10 h-8 w-8 p-0 rounded-full 
+              className="absolute left-0 top-1 z-10 h-8 w-8 p-0 rounded-full 
                         sm:rounded-lg sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 
                         bg-stone-300 hover:bg-stone-400 text-black transition-all"
               style={{ zIndex: 20 }}
@@ -126,7 +148,7 @@ export default function MusicPlayer() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="bg-stone-700 border-stone-600 max-w-md opacity-85">
+          <DialogContent className="bg-stone-700 border-stone-600 max-w-md opacity-90">
             <DialogHeader>
               <DialogTitle className="text-stone-400">Add New Playlist</DialogTitle>
             </DialogHeader>
@@ -176,24 +198,39 @@ export default function MusicPlayer() {
           </DialogContent>
         </Dialog>
 
-        <div className="flex space-x-3 overflow-x-auto scrollbar-default pb-2 pl-10 sm:pl-18 lg:pl-36">
-        {Object.keys({...customPlaylists, ...predefinedPlaylists}).map((genre) => (
-            <button
-              key={genre}
-              onClick={() => {
-                setMusicGenre(genre)
-                setCurrentVideoIndex(0)
-                setPlaybackTime(0)
-              }}
-              className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
-                musicGenre === genre
-                  ? 'bg-stone-300 text-black'
-                  : 'bg-stone-800/30 text-gray-300 hover:bg-stone-400 hover:text-black'
-              }`}
-            >
-              {genre}
-            </button>
-          ))}
+        <div className="flex overflow-x-auto scrollbar-default pb-2 pl-10 sm:pl-18 lg:pl-36 pt-1 gap-2">
+          {playlistOrder.map((genre) => {
+            const isCustom = customPlaylists.hasOwnProperty(genre)
+            return (
+              <div key={genre} className="relative flex-shrink-0 overflow-visible">
+                <div className="relative group">
+                  <button
+                    onClick={() => {
+                      setMusicGenre(genre);
+                      setCurrentVideoIndex(0);
+                      setPlaybackTime(0);
+                    }}
+                    className={`relative px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                      musicGenre === genre
+                        ? 'bg-stone-300 text-black'
+                        : 'bg-stone-800/30 text-gray-300 hover:bg-stone-400 hover:text-black'
+                    }`}
+                  >
+                    {genre}
+                  </button>
+                  {isCustom && (
+                    <button
+                      onClick={(e) => handleDeletePlaylist(e, genre)}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs hover:bg-red-600 shadow-md z-10"
+                      aria-label={`Delete ${genre} playlist`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
