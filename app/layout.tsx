@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Are you accelerating?",
     description: "The clock is ticking...",
-    url: 'https://yr-ctr.vercel.app/',
+    url: 'https://horologium.vercel.app/',
     siteName: 'The Timekeeper',
     type: 'website',
     images: [
