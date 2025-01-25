@@ -1,8 +1,17 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { FaPlus } from 'react-icons/fa'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
-// Predefined YouTube Playlist IDs
 const predefinedPlaylists = {
   Zimmer: 'PLzPUZygRisDaRz6HvENiVEI66rV1_E9F0',
   Nujabes: 'PL78919005D9B21949',
@@ -16,7 +25,6 @@ const predefinedPlaylists = {
 }
 
 export default function MusicPlayer() {
-  // Load custom playlists from localStorage
   const [customPlaylists, setCustomPlaylists] = useState<Record<string, string>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('customPlaylists')
@@ -25,18 +33,15 @@ export default function MusicPlayer() {
     return {}
   })
 
-  // Merge predefined and custom playlists
   const allPlaylists: Record<string, string> = useMemo(() => ({
     ...predefinedPlaylists,
     ...customPlaylists
   }), [customPlaylists])
 
-  // Music genre state
   const [musicGenre, setMusicGenre] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const savedGenre = localStorage.getItem('musicGenre')
-      const isValid = savedGenre && allPlaylists.hasOwnProperty(savedGenre)
-      return isValid ? savedGenre : 'Zimmer'
+      return savedGenre && allPlaylists.hasOwnProperty(savedGenre) ? savedGenre : 'Zimmer'
     }
     return 'Zimmer'
   })
@@ -57,24 +62,21 @@ export default function MusicPlayer() {
     return 0
   })
 
-  // Add playlist form state
   const [newPlaylistName, setNewPlaylistName] = useState('')
   const [newPlaylistId, setNewPlaylistId] = useState('')
   const [error, setError] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
 
-  // Save states to localStorage
   useEffect(() => {
     localStorage.setItem('musicGenre', musicGenre)
     localStorage.setItem('currentVideoIndex', currentVideoIndex.toString())
     localStorage.setItem('playbackTime', playbackTime.toString())
   }, [musicGenre, currentVideoIndex, playbackTime])
 
-  // Handle adding new playlist
   const handleAddPlaylist = (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    // Validate inputs
     if (!newPlaylistName.trim()) {
       setError('Please enter a playlist name')
       return
@@ -85,13 +87,11 @@ export default function MusicPlayer() {
       return
     }
 
-    // Check for existing name
     if (allPlaylists.hasOwnProperty(newPlaylistName)) {
       setError('This name is already in use')
       return
     }
 
-    // Update custom playlists
     const updatedPlaylists = {
       ...customPlaylists,
       [newPlaylistName.trim()]: newPlaylistId.trim()
@@ -99,28 +99,85 @@ export default function MusicPlayer() {
 
     setCustomPlaylists(updatedPlaylists)
     localStorage.setItem('customPlaylists', JSON.stringify(updatedPlaylists))
-
-    // Reset form
     setNewPlaylistName('')
     setNewPlaylistId('')
+    setDialogOpen(false)
   }
 
-  // YouTube player parameters
   const getYouTubeParams = () => {
     return `list=${allPlaylists[musicGenre]}&index=${currentVideoIndex}&start=${Math.floor(playbackTime)}&autoplay=1&enablejsapi=1`
   }
 
-  // Player state management (same as before)
-  // ... [keep the existing player state management code]
-
   return (
     <div className="bg-stone-700/60 border-stone-900 backdrop-blur-sm rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-white mb-4">Focus Music</h2>
+      <h2 className="text-2xl font-bold text-white mb-4">Lock in Music</h2>
 
-      {/* Genre Selector */}
-      <div className="relative">
-        <div className="flex space-x-3 mb-4 overflow-x-auto scrollbar-default pb-2">
-          {Object.keys(allPlaylists).map((genre) => (
+      <div className="relative mb-6">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              className="absolute left-0 top-0 z-10 h-8 w-8 p-0 rounded-full 
+                        sm:rounded-lg sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 
+                        bg-stone-300 hover:bg-stone-400 text-black transition-all"
+              style={{ zIndex: 20 }}
+            >
+              <FaPlus className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Add Playlist</span>
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="bg-stone-700 border-stone-600 max-w-md opacity-85">
+            <DialogHeader>
+              <DialogTitle className="text-stone-400">Add New Playlist</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleAddPlaylist} className="space-y-4">
+              <div className="space-y-2">
+                <div>
+                  <label className="text-sm text-stone-300">Playlist Name</label>
+                  <Input
+                    placeholder="My Playlist"
+                    value={newPlaylistName}
+                    onChange={(e) => setNewPlaylistName(e.target.value)}
+                    className="bg-stone-800 border-stone-500 text-white"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm text-stone-300">YouTube Playlist ID</label>
+                  <Input
+                    placeholder="PLzPUZygRisDaRz6HvENiVEI66rV1_E9F0"
+                    value={newPlaylistId}
+                    onChange={(e) => setNewPlaylistId(e.target.value)}
+                    className="bg-stone-800 border-stone-500 text-white"
+                  />
+                </div>
+              </div>
+
+              {error && <p className="text-red-400 text-sm animate-pulse">⚠️ {error}</p>}
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="bg-stone-300 text-black hover:bg-stone-400"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-stone-300 text-black hover:bg-stone-400"
+                >
+                  Add Playlist
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <div className="flex space-x-3 overflow-x-auto scrollbar-default pb-2 pl-10 sm:pl-18 lg:pl-36">
+        {Object.keys({...customPlaylists, ...predefinedPlaylists}).map((genre) => (
             <button
               key={genre}
               onClick={() => {
@@ -140,34 +197,6 @@ export default function MusicPlayer() {
         </div>
       </div>
 
-      {/* Add Playlist Form */}
-      <form onSubmit={handleAddPlaylist} className="mb-4 space-y-2">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Playlist Name"
-            value={newPlaylistName}
-            onChange={(e) => setNewPlaylistName(e.target.value)}
-            className="flex-1 p-2 rounded bg-stone-800/30 text-white placeholder-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="YouTube Playlist ID"
-            value={newPlaylistId}
-            onChange={(e) => setNewPlaylistId(e.target.value)}
-            className="flex-1 p-2 rounded bg-stone-800/30 text-white placeholder-gray-400"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-stone-300 text-black rounded hover:bg-stone-400 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-      </form>
-
-      {/* YouTube Player */}
       <div className="aspect-w-16 aspect-h-9">
         <iframe
           src={`https://www.youtube.com/embed/videoseries?${getYouTubeParams()}`}
