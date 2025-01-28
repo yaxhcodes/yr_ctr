@@ -49,7 +49,6 @@ export default function TabsContainer() {
     }
   ]
 
-  // Handle footer text change on hover or selection
   const handleFooterHover = () => {
     setFooterText('A project under Flames of Amaterasu!!')
   }
@@ -103,6 +102,8 @@ export default function TabsContainer() {
                 key={tab.id}
                 value={tab.id}
                 className="transition-opacity duration-200"
+                forceMount // Mount all tabs
+                hidden={activeTab !== tab.id} // Hides instead of unmount
               >
                 {tab.content}
               </TabsContent>
@@ -110,14 +111,12 @@ export default function TabsContainer() {
           </div>
         </Tabs>
 
-        {/* Music Player Section */}
         <div
           className={`w-full mt-2 ${activeTab !== 'focus' ? 'hidden' : ''}`}
         >
           <MusicPlayer />
         </div>
 
-        {/* Footer with Animated Text */}
         <footer
           className="flex justify-center py-8 text-sm cursor-pointer"
           onMouseEnter={handleFooterHover}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Play, Pause, RefreshCw, Settings } from 'lucide-react'
@@ -29,21 +29,16 @@ export default function PomodoroClock() {
   const [videoData, setVideoData] = useState<{ youtube_id: string } | null>(null)
 
   const { toast } = useToast()
+  const startTimeRef = useRef<number | null>(null)
+  const accumulatedTimeRef = useRef(0)
+  const totalTime = isBreak ? breakDuration * 60 : workDuration * 60
 
-  // Save state to local storage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('pomodoroTime', time.toString())
-  }, [time])
+  // Save state to local storage
+  useEffect(() => localStorage.setItem('pomodoroTime', time.toString()), [time])
+  useEffect(() => localStorage.setItem('pomodoroIsActive', isActive.toString()), [isActive])
+  useEffect(() => localStorage.setItem('pomodoroIsBreak', isBreak.toString()), [isBreak])
 
-  useEffect(() => {
-    localStorage.setItem('pomodoroIsActive', isActive.toString())
-  }, [isActive])
-
-  useEffect(() => {
-    localStorage.setItem('pomodoroIsBreak', isBreak.toString())
-  }, [isBreak])
-
-  // Fetch video data from the API endpoint
+  // Fetch video data
   useEffect(() => {
     const fetchVideoData = async () => {
       try {
@@ -54,28 +49,49 @@ export default function PomodoroClock() {
         console.error('Error fetching video data:', error)
       }
     }
-
     fetchVideoData()
   }, [])
 
-  // Update the tab title with the timer state
+  // Update document title
   useEffect(() => {
     const mode = isBreak ? 'Break Mode' : 'Focus Mode'
     const formattedTime = formatTime(time)
-    document.title = `${mode} - ${formattedTime}`
+    document.title = `${formattedTime} - ${mode}`
   }, [time, isBreak])
 
-  // Timer logic
+  // Accurate timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout
 
-    if (isActive && time > 0) {
+    if (isActive) {
+      startTimeRef.current = Date.now()
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime - 1)
-      }, 1000)
-    } else if (time === 0) {
-      setIsBreak((prevIsBreak) => !prevIsBreak)
+        const currentTime = Date.now()
+        const elapsedSeconds = Math.floor((currentTime - startTimeRef.current!) / 1000)
+        const newTime = totalTime - elapsedSeconds - accumulatedTimeRef.current
+
+        if (newTime <= 0) {
+          setTime(0)
+        } else {
+          setTime(newTime)
+        }
+      }, 200)
+    }
+
+    return () => {
+      clearInterval(interval)
+      if (isActive && startTimeRef.current) {
+        accumulatedTimeRef.current += Math.floor((Date.now() - startTimeRef.current) / 1000)
+      }
+    }
+  }, [isActive, totalTime])
+
+  // Handle phase change
+  useEffect(() => {
+    if (time === 0) {
+      setIsBreak(prev => !prev)
       setTime(isBreak ? workDuration * 60 : breakDuration * 60)
+      accumulatedTimeRef.current = 0
       setIsActive(true)
 
       const today = new Date().toDateString()
@@ -87,31 +103,22 @@ export default function PomodoroClock() {
           description: "You have unlocked today's video!",
           variant: "default",
         })
-
         localStorage.setItem('lastCompletedDate', today)
       }
 
-      if (!isBreak) {
-        toast({
-          title: "Congrats! 🎉",
-          description: "You completed the focus duration. Time for a break!",
-          variant: "default",
-        })
-      } else {
-        toast({
-          title: "Break's Over! ⏰",
-          description: "Time to focus again. Let's get back to work!",
-          variant: "default",
-        })
-      }
+      toast({
+        title: !isBreak ? "Congrats! 🎉" : "Break's Over! ⏰",
+        description: !isBreak 
+          ? "You completed the focus duration. Time for a break!"
+          : "Time to focus again. Let's get back to work!",
+        variant: "default",
+      })
 
-      if (typeof window !== 'undefined' && window.Notification && Notification.permission === 'granted') {
+      if (Notification.permission === 'granted') {
         new Notification(isBreak ? 'Focus Time!' : 'Break Time!')
       }
     }
-
-    return () => clearInterval(interval)
-  }, [isActive, time, isBreak, workDuration, breakDuration, toast])
+  }, [time, isBreak, workDuration, breakDuration, toast])
 
   const startTimer = () => setIsActive(true)
   const pauseTimer = () => setIsActive(false)
@@ -119,6 +126,7 @@ export default function PomodoroClock() {
     setIsActive(false)
     setIsBreak(false)
     setTime(workDuration * 60)
+    accumulatedTimeRef.current = 0
     localStorage.removeItem('pomodoroTime')
     localStorage.removeItem('pomodoroIsActive')
     localStorage.removeItem('pomodoroIsBreak')
@@ -127,19 +135,15 @@ export default function PomodoroClock() {
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
     const seconds = time % 60
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const handleSettings = () => {
-    setShowSettings(true)
-  }
-
+  const handleSettings = () => setShowSettings(true)
   const saveSettings = () => {
     setTime(workDuration * 60)
     setShowSettings(false)
   }
 
-  const totalTime = isBreak ? breakDuration * 60 : workDuration * 60
   const progressPercentage = ((totalTime - time) / totalTime) * 100
 
   const handleVideoClick = () => {
@@ -224,7 +228,6 @@ export default function PomodoroClock() {
         </CardContent>
       </Card>
 
-      {/* Render the SettingsModal */}
       <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
@@ -235,7 +238,6 @@ export default function PomodoroClock() {
         onSave={saveSettings}
       />
 
-      {/* Add the Toaster component to display toast messages */}
       <Toaster />
     </div>
   )
