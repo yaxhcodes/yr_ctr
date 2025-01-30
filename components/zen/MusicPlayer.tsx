@@ -130,6 +130,7 @@ export default function MusicPlayer() {
     return `list=${allPlaylists[musicGenre]}&index=${currentVideoIndex}&start=${Math.floor(playbackTime)}&autoplay=1&enablejsapi=1`
   }
 
+  
   return (
     <div className="bg-stone-700/60 border-stone-900 backdrop-blur-sm rounded-lg p-6">
       <h2 className="text-2xl font-bold text-white mb-4">Lock in Music</h2>
@@ -138,45 +139,45 @@ export default function MusicPlayer() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button
-              className="absolute left-0 top-1 z-10 h-8 w-8 p-0 rounded-full 
+              className="absolute left-0 top-1 z-30 h-8 w-8 p-0 rounded-md 
                         sm:rounded-lg sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 
-                        bg-stone-300 hover:bg-stone-400 text-black transition-all"
-              style={{ zIndex: 20 }}
+                        bg-stone-300 hover:bg-stone-400 text-black transition-all
+                        shadow-[4px_0_8px_2px_rgba(68,64,60,0.95)]"
             >
               <FaPlus className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Add Playlist</span>
+              <span className="hidden sm:inline">Add Playlist</span>
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="bg-stone-700 border-stone-600 max-w-md opacity-90">
+          <DialogContent className="bg-stone-700 border-stone-600 max-w-md opacity-95">
             <DialogHeader>
-              <DialogTitle className="text-stone-400">Add New Playlist</DialogTitle>
+              <DialogTitle className="text-stone-100">Add New Playlist</DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleAddPlaylist} className="space-y-4">
-              <div className="space-y-2">
-                <div>
-                  <label className="text-sm text-stone-300">Playlist Name</label>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-stone-100">Playlist Name</label>
                   <Input
                     placeholder="My Playlist"
                     value={newPlaylistName}
                     onChange={(e) => setNewPlaylistName(e.target.value)}
-                    className="bg-stone-800 border-stone-500 text-white"
+                    className="bg-stone-800 border-stone-600 focus:ring-2 focus:ring-stone-400 text-white"
                   />
                 </div>
                 
-                <div>
-                  <label className="text-sm text-stone-300">YouTube Playlist ID</label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-stone-100">YouTube Playlist ID</label>
                   <Input
                     placeholder="PLzPUZygRisDaRz6HvENiVEI66rV1_E9F0"
                     value={newPlaylistId}
                     onChange={(e) => setNewPlaylistId(e.target.value)}
-                    className="bg-stone-800 border-stone-500 text-white"
+                    className="bg-stone-800 border-stone-600 focus:ring-2 focus:ring-stone-400 text-white"
                   />
                 </div>
               </div>
 
-              {error && <p className="text-red-400 text-sm animate-pulse">⚠️ {error}</p>}
+              {error && <p className="text-red-400 text-sm font-medium">⚠️ {error}</p>}
 
               <div className="flex justify-end gap-2">
                 <Button
@@ -198,11 +199,12 @@ export default function MusicPlayer() {
           </DialogContent>
         </Dialog>
 
-        <div className="flex overflow-x-auto scrollbar-default pb-2 pl-10 sm:pl-18 lg:pl-36 pt-1 gap-2">
-          {playlistOrder.map((genre) => {
+        
+        <div className="flex overflow-x-auto scrollbar-default pb-2 pl-10 lg:pl-34 md:pl-34 sm:pl-24 pt-1 gap-2 scroll-px-4 sm:scroll-px-24">          
+            {playlistOrder.map((genre) => {
             const isCustom = customPlaylists.hasOwnProperty(genre)
             return (
-              <div key={genre} className="relative flex-shrink-0 overflow-visible">
+              <div key={genre} className="relative flex-shrink-0">
                 <div className="relative group">
                   <button
                     onClick={() => {
@@ -213,20 +215,20 @@ export default function MusicPlayer() {
                     className={`relative px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
                       musicGenre === genre
                         ? 'bg-stone-300 text-black'
-                        : 'bg-stone-800/30 text-gray-300 hover:bg-stone-400 hover:text-black'
+                        : 'bg-stone-800/50 text-stone-200 hover:bg-stone-400 hover:text-black'
                     }`}
                   >
                     {genre}
+                    {isCustom && (
+                      <span
+                        onClick={(e) => handleDeletePlaylist(e, genre)}
+                        className="absolute -top-0.5 -right-0.5 bg-red-700 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs hover:bg-red-800 shadow-md cursor-pointer"
+                        aria-label={`Delete ${genre} playlist`}
+                      >
+                        ×
+                      </span>
+                    )}
                   </button>
-                  {isCustom && (
-                    <button
-                      onClick={(e) => handleDeletePlaylist(e, genre)}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs hover:bg-red-600 shadow-md z-10"
-                      aria-label={`Delete ${genre} playlist`}
-                    >
-                      ×
-                    </button>
-                  )}
                 </div>
               </div>
             )
@@ -239,7 +241,7 @@ export default function MusicPlayer() {
           src={`https://www.youtube.com/embed/videoseries?${getYouTubeParams()}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-          className="w-full h-full rounded-lg"
+          className="w-full h-full rounded-lg border border-stone-600"
         />
       </div>
     </div>

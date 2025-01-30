@@ -16,14 +16,22 @@ body {
 }
 
 .scrollbar-default::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
 }
-.scrollbar-default::-webkit-scrollbar-thumb {
-  background-color: rgba(44, 42, 39, 0.900); /* Purple-500 with transparency */
-  border-radius: 3px;
-}
+
 .scrollbar-default::-webkit-scrollbar-track {
-  background-color: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+}
+
+.scrollbar-default::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
+
+.scrollbar-default::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
+  cursor: grab;
 }
 
 
